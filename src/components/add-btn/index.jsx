@@ -1,4 +1,4 @@
-import { Button, Input, Select, Space, Tag } from "antd";
+import { Button, Input, Select, Space, Tag, message } from "antd";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import todoSlice from '../todo/todoSlice';
@@ -6,11 +6,19 @@ import { v4 as uuidv4 } from 'uuid';
 
 const AddButton = () => {
   const dispatch = useDispatch();
-  const [userInput, setUserInput] = useState();
+  const [userInput, setUserInput] = useState('');
   const [priority, setPriority] = useState('Medium');
+  const [messageApi, contextHolder] = message.useMessage();
 
   const handlePriorityChange = (e) => {
     setPriority(e);
+  }
+
+  const displayMessage = (text, type) => {
+    messageApi.open({
+      type: type,
+      content: text,
+    });
   }
 
   const options = (
@@ -28,14 +36,16 @@ const AddButton = () => {
   );
 
   const hanldeClickAdd = () => {
-    dispatch(todoSlice.actions.addTodo({
-      id: uuidv4(),
-      name: userInput,
-      priority: priority,
-      completed: false
-    }));
-    setPriority('Medium');
-    setUserInput('');
+    if (userInput !== '') {
+      dispatch(todoSlice.actions.addTodo({
+        id: uuidv4(),
+        name: userInput,
+        priority: priority,
+        completed: false
+      }));
+      setPriority('Medium');
+      setUserInput('');
+    } else displayMessage("Please enter todo's name", 'error');
   }
 
   const handleInputChange = (e) => {
@@ -43,15 +53,18 @@ const AddButton = () => {
   }
 
   return (
-    <Space.Compact className="w-full">
-      <Input value={userInput} addonAfter={options} allowClear onChange={handleInputChange}/>
-      <Button
-        className="bg-[#1677ff] text-white"
-        onClick={hanldeClickAdd}
-      >
-        Add
-      </Button>
-    </Space.Compact>
+    <>
+      {contextHolder}
+      <Space.Compact className="w-full">
+        <Input value={userInput} addonAfter={options} allowClear onChange={handleInputChange}/>
+        <Button
+          className="bg-[#1677ff] text-white"
+          onClick={hanldeClickAdd}
+        >
+          Add
+        </Button>
+      </Space.Compact>
+    </>
   );
 };
 
